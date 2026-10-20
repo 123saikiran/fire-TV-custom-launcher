@@ -42,6 +42,8 @@ The app changes only Home on Fire's Accessibility service and preserves other en
 
 The Wi-Fi pill requests Location permission because Fire OS requires it to reveal the connected network name. Inputs for HDMI and AV display instructions to use the television remote; Fire TV apps cannot reliably switch inputs on the Samsung television itself. Live TV appears only when the Fire TV package is available.
 
+## Added a skill too , where you can directly use this skill to build the custom launcher for your tv
+
 ## Project contents
 
 - `app/src/main/java/com/codex/firetvhome/MainActivity.java` — UI, app discovery and launch, focus memory, launcher switching, and screensaver.
