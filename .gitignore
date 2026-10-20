@@ -1,0 +1,27 @@
+# Local Android build output
+.gradle/
+.gradle-*/
+build/
+app/build/
+local.properties
+
+# Local tooling and credentials: never publish these
+.venv/
+.private/
+toolchain/
+
+# Device-specific captures and backups may contain account, network, or device data
+verification/
+backups/
+
+# ADB helper and device-maintenance files are local-only
+firetv_adb.py
+build-install.sh
+disable_capture.py
+disabled_by_us.txt
+PACKAGE_CATEGORIES.md
+restore.sh
+
+# Downloaded helper APKs are not part of AFT Home
+tools/downloads/
+dock.json
