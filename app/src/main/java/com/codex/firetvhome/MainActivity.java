@@ -65,7 +65,11 @@ public class MainActivity extends Activity {
   }
   private void buildScreen(){
     shell=new FrameLayout(this);
-    content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(dp(56),dp(30),dp(56),dp(24));content.setBackgroundColor(Color.BLACK);
+    ImageView background=new ImageView(this);background.setImageResource(R.drawable.aft_home_background);background.setScaleType(ImageView.ScaleType.CENTER_CROP);background.setContentDescription(null);
+    shell.addView(background,new FrameLayout.LayoutParams(-1,-1));
+    View scrim=new View(this);scrim.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x10000000,0x08000000,0x64000000}));
+    shell.addView(scrim,new FrameLayout.LayoutParams(-1,-1));
+    content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(dp(56),dp(30),dp(56),dp(24));content.setBackgroundColor(Color.TRANSPARENT);
     shell.addView(content,new FrameLayout.LayoutParams(-1,-1));setContentView(shell);
 
     FrameLayout header=new FrameLayout(this);content.addView(header,new LinearLayout.LayoutParams(-1,dp(145)));
@@ -119,7 +123,7 @@ public class MainActivity extends Activity {
   }
   private LinearLayout makeTile(App a){
     LinearLayout tile=new LinearLayout(this);tile.setOrientation(LinearLayout.VERTICAL);tile.setGravity(Gravity.CENTER);tile.setPadding(dp(12),dp(12),dp(12),dp(10));tile.setFocusable(true);
-    tile.setBackground(rounded(0xff12151b,17));ImageView icon=new ImageView(this);icon.setScaleType(ImageView.ScaleType.FIT_CENTER);tile.addView(icon,new LinearLayout.LayoutParams(dp(96),dp(92)));
+    tile.setBackground(rounded(0x3d111923,17));ImageView icon=new ImageView(this);icon.setScaleType(ImageView.ScaleType.FIT_CENTER);tile.addView(icon,new LinearLayout.LayoutParams(dp(96),dp(92)));
     TextView name=label("",17,WHITE);name.setTypeface(outfit);name.setGravity(Gravity.CENTER);name.setSingleLine(true);name.setEllipsize(android.text.TextUtils.TruncateAt.END);tile.addView(name,new LinearLayout.LayoutParams(-1,dp(34)));
     return tile;
   }
@@ -130,7 +134,7 @@ public class MainActivity extends Activity {
       App a=apps.get(position);LinearLayout tile=(LinearLayout)holder.itemView;ImageView icon=(ImageView)tile.getChildAt(0);TextView name=(TextView)tile.getChildAt(1);
       icon.setImageDrawable(a.icon);name.setText(a.label);tile.setTag(position);
       RecyclerView.LayoutParams lp=new RecyclerView.LayoutParams(dp(190),dp(168));lp.setMargins(0,dp(8),dp(18),dp(16));tile.setLayoutParams(lp);
-      tile.setOnFocusChangeListener((v,focused)->{v.animate().scaleX(focused?1.07f:1f).scaleY(focused?1.07f:1f).setInterpolator(new OvershootInterpolator(1.2f)).setDuration(210).start();v.setBackground(rounded(focused?0xff283748:0xff12151b,17));if(focused){heroTitle.setText(a.label);getPreferences(0).edit().putString("last",a.pkg).apply();}});
+      tile.setOnFocusChangeListener((v,focused)->{v.animate().scaleX(focused?1.07f:1f).scaleY(focused?1.07f:1f).setInterpolator(new OvershootInterpolator(1.2f)).setDuration(210).start();v.setBackground(rounded(focused?0x70435b76:0x3d111923,17));if(focused){heroTitle.setText(a.label);getPreferences(0).edit().putString("last",a.pkg).apply();}});
       tile.setOnClickListener(v->launch(a));tile.setOnKeyListener((v,key,event)->{if(event.getAction()!=KeyEvent.ACTION_DOWN)return false;if(key==KeyEvent.KEYCODE_DPAD_UP){if(topBar.getChildCount()>0)topBar.getChildAt(0).requestFocus();return true;}if(key==KeyEvent.KEYCODE_DPAD_DOWN)return true;if(key==KeyEvent.KEYCODE_DPAD_LEFT&&position==0)return true;return false;});
     }
   }
@@ -182,10 +186,21 @@ public class MainActivity extends Activity {
   @Override protected void onPause(){super.onPause();handler.removeCallbacks(idleTask);handler.removeCallbacks(clockTask);}
   @Override protected void onResume(){super.onResume();setHomeRedirectEnabled(true);handler.removeCallbacks(clockTask);handler.postDelayed(clockTask,1000);resetIdleTimer();}
   private class ScreenSaver extends View{
-    private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);private final Handler motion=new Handler();private int phase=0;private final Runnable drift=new Runnable(){public void run(){phase++;invalidate();if(saverVisible)motion.postDelayed(this,30000);}};
+    private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
+    private final Handler motion=new Handler(Looper.getMainLooper());
+    private final String[] scenes={"01_coast.jpg","02_desert.jpg","03_hanuman.jpg","04_radha_krishna.jpg","05_vishnu.jpg","06_durga.jpg","07_shiva.jpg"};
+    private Bitmap current,next;private int sceneIndex=0;private long fadeStarted;
+    private static final long SCENE_DURATION=30000L,FADE_DURATION=1800L,FRAME_DELAY=60L;
+    private final Runnable advance=new Runnable(){public void run(){if(!saverVisible)return;next=decodeScene((sceneIndex+1)%scenes.length);if(next==null){sceneIndex=(sceneIndex+1)%scenes.length;motion.postDelayed(this,SCENE_DURATION);return;}fadeStarted=SystemClock.uptimeMillis();invalidate();motion.postDelayed(fade,FRAME_DELAY);}};
+    private final Runnable fade=new Runnable(){public void run(){if(!saverVisible||next==null)return;long elapsed=SystemClock.uptimeMillis()-fadeStarted;if(elapsed>=FADE_DURATION){if(current!=null)current.recycle();current=next;next=null;sceneIndex=(sceneIndex+1)%scenes.length;invalidate();motion.postDelayed(advance,SCENE_DURATION);return;}invalidate();motion.postDelayed(this,FRAME_DELAY);}};
     ScreenSaver(Context context){super(context);setFocusable(true);}
-    void startMotion(){motion.removeCallbacks(drift);motion.postDelayed(drift,30000);}
-    void stopMotion(){motion.removeCallbacks(drift);}
-    @Override protected void onDraw(Canvas canvas){super.onDraw(canvas);float w=getWidth(),h=getHeight();canvas.drawColor(Color.BLACK);paint.setShader(new LinearGradient(0,h*.78f,w,h*.22f,new int[]{0xff10233c,0xff33203a,0xff101823},null,Shader.TileMode.CLAMP));canvas.drawRect(0,h*.76f,w,h,paint);paint.setShader(null);paint.setTypeface(outfit);paint.setColor(0xffe6e9ef);paint.setTextSize(dp(58));String time=new SimpleDateFormat("h:mm",Locale.getDefault()).format(new Date());float x=w*.18f+((phase%5)-2)*dp(22);float y=h*.48f+((phase%3)-1)*dp(18);canvas.drawText(time,x,y,paint);paint.setTextSize(dp(19));paint.setColor(0xff9ba6b5);String day=new SimpleDateFormat("EEEE · MMMM d",Locale.getDefault()).format(new Date());canvas.drawText(day,x,y+dp(35),paint);}
+    void startMotion(){stopMotion();if(current==null)current=decodeScene(sceneIndex);invalidate();motion.postDelayed(advance,SCENE_DURATION);}
+    void stopMotion(){motion.removeCallbacks(advance);motion.removeCallbacks(fade);if(next!=null){next.recycle();next=null;}if(current!=null){current.recycle();current=null;}}
+    private Bitmap decodeScene(int index){try(java.io.InputStream in=getAssets().open("screensaver/"+scenes[index])){BitmapFactory.Options options=new BitmapFactory.Options();options.inPreferredConfig=Bitmap.Config.RGB_565;options.inScaled=false;return BitmapFactory.decodeStream(in,null,options);}catch(Exception ignored){return null;}}
+    private void drawScene(Canvas canvas,Bitmap bitmap,float alpha){if(bitmap==null)return;float w=getWidth(),h=getHeight();float scale=Math.max(w/bitmap.getWidth(),h/bitmap.getHeight());float dw=bitmap.getWidth()*scale,dh=bitmap.getHeight()*scale;RectF dst=new RectF((w-dw)/2,(h-dh)/2,(w+dw)/2,(h+dh)/2);paint.setAlpha(Math.round(alpha*255));canvas.drawBitmap(bitmap,null,dst,paint);paint.setAlpha(255);}
+    @Override protected void onDraw(Canvas canvas){super.onDraw(canvas);float w=getWidth(),h=getHeight();canvas.drawColor(Color.BLACK);long elapsed=next==null?FADE_DURATION:SystemClock.uptimeMillis()-fadeStarted;float blend=Math.min(1f,Math.max(0f,(float)elapsed/FADE_DURATION));drawScene(canvas,current,next==null?1f:1f-blend);if(next!=null)drawScene(canvas,next,blend);paint.setAlpha(255);
+      // A subtle top-to-bottom scrim keeps the clock readable over both bright and dark scenes.
+      paint.setShader(new LinearGradient(0,0,0,h*.58f,new int[]{0x50000000,0x18000000,0x00000000},null,Shader.TileMode.CLAMP));canvas.drawRect(0,0,w,h*.58f,paint);paint.setShader(null);
+      paint.setTypeface(outfit);paint.setShadowLayer(dp(5),0,dp(2),0x99000000);paint.setColor(0xfff2f3f7);paint.setTextSize(dp(58));String time=new SimpleDateFormat("h:mm",Locale.getDefault()).format(new Date());float x=w*.18f,y=h*.48f;canvas.drawText(time,x,y,paint);paint.clearShadowLayer();paint.setTextSize(dp(19));paint.setColor(0xffc8cdd6);String day=new SimpleDateFormat("EEEE · MMMM d",Locale.getDefault()).format(new Date());canvas.drawText(day,x,y+dp(35),paint);}
   }
 }

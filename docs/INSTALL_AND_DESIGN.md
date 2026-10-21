@@ -4,13 +4,13 @@ AFT Home is a small native Java launcher built for a Fire TV device. It gives th
 
 ## What the screen does
 
-![AFT Home main screen on the TV; network name omitted](screenshots/aft-home-main.png)
+![AFT Home main screen on the TV; network name masked](screenshots/aft-home-main.jpg)
 
 - The top left shows a greeting, large clock, and date in Outfit.
 - The top right opens Inputs, Wi-Fi settings, the launcher chooser, and device Settings.
 - A horizontal app chain begins with Netflix, YouTube, JioHotstar, and Prime Video. Additional Android TV apps are discovered from the installed apps and sorted by name.
 - The focused tile grows and changes its background. Its name is also shown above the chain. Focus is remembered across launches.
-- After two minutes without a remote key press, a black clock screensaver appears. Its clock drifts slowly and reduces screen brightness. Press any remote key to return.
+- After two minutes without a remote key press, a screensaver rotates through two soft abstract landscapes and five original devotional artworks: Hanuman, Radha-Krishna, Vishnu, Durga, and Shiva. It crossfades between still images every 30 seconds, overlays a readable clock and date, and reduces screen brightness. Press any remote key to return.
 
 ## How the implementation is organized
 
@@ -22,7 +22,7 @@ The launcher is implemented in `app/src/main/java/com/codex/firetvhome/MainActiv
 - `AppsAdapter` binds app names and icons, animates focus, saves the last focused package, and launches selected apps.
 - `showLauncherChooser()` offers AFT Home or Amazon Home.
 - `setHomeRedirectEnabled()` controls only Home on Fire's Accessibility service while preserving other services. The app needs the ADB-granted `WRITE_SECURE_SETTINGS` permission to update that setting.
-- `resetIdleTimer()`, `showScreensaver()`, and `ScreenSaver` handle inactivity, dimming, and the slow clock movement.
+- `resetIdleTimer()`, `showScreensaver()`, and `ScreenSaver` handle inactivity, dimming, and the artwork rotation. `ScreenSaver` decodes only the current and next image as RGB_565 bitmaps, crossfades them, then releases the old bitmap to limit memory use.
 
 The Gradle project uses Android Gradle Plugin, the Gradle 8.11.1 wrapper, Java, and AndroidX RecyclerView. It sets `minSdk` 28, compiles against SDK 35, and targets SDK 28 for the older Fire OS behavior. Outfit is included with its SIL Open Font License. The build produces a debug APK; no signing key is required for local ADB installation.
 
@@ -89,7 +89,7 @@ ADB versions on macOS can be affected by Local Network privacy. If `adb` reports
 
 Edit the `addPinned()` calls in `loadApps()` in `MainActivity.java`, then rebuild and reinstall. Keep package IDs accurate for the target device; package names can differ between TV firmware and app versions.
 
-To change the background, edit the `Color.BLACK` background assignment in `buildScreen()`. The screensaver background is drawn separately in `ScreenSaver.onDraw()`.
+The home screen uses `app/src/main/res/drawable-nodpi/aft_home_background.jpg` as a full-screen, center-cropped background. Replace that JPEG to change the wallpaper; the subtle dark gradient above it keeps the existing clock and app tiles readable. App tiles have translucent dark surfaces, with a brighter translucent surface on the focused tile, so the wallpaper remains visible through the row. The app row and its original Netflix, YouTube, JioHotstar, and Prime Video artwork are unchanged. The screensaver is separate: its artwork lives in `app/src/main/assets/screensaver/`; edit the `scenes` array in `ScreenSaver` to change the rotation order. Add images as 16:9 JPEG files around 1280×720 for a balance of image quality and memory use. The rotation delay is set by `SCENE_DURATION` in `ScreenSaver` (30 seconds by default). The screensaver image files are intentionally kept local and excluded from this review branch; add them to that directory to enable the image rotation in a fresh checkout.
 
 ## Re-enable an app or restore the device
 
