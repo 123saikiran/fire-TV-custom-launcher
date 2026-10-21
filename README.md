@@ -1,14 +1,14 @@
 # AFT Home
 
-A lightweight, native Android TV launcher for Fire TV. AFT Home presents installed apps in a horizontal chain on a black screen, with a clock, date, Wi-Fi shortcut, launcher switch, and a low-motion clock screensaver.
+A lightweight, native Android TV launcher for Fire TV. AFT Home presents installed apps in a horizontal chain over a starry mountain background, with a clock, date, Wi-Fi shortcut, launcher switch, and a low-motion clock screensaver.
 
-![AFT Home running on Fire TV](docs/screenshots/aft-home-main.png)
+![AFT Home running on Fire TV](docs/screenshots/aft-home-main.jpg)
 
 ## At a glance
 
 - Pinned app order: Netflix, YouTube, JioHotstar, Prime Video. Other Android TV apps follow alphabetically.
 - D-pad browsing with a remembered last-focused app.
-- A low-motion clock screensaver after two minutes of inactivity. It uses no video, blur, wallpaper downloads, or background network polling.
+- A rotating screensaver after two minutes of inactivity, with two abstract landscapes and five original devotional scenes (Hanuman, Radha-Krishna, Vishnu, Durga, Shiva). It crossfades every 30 seconds, dims the display, and uses no video or network polling. Screensaver image files remain local and are intentionally excluded from this review branch.
 - A launcher chooser for AFT Home and Amazon Home.
 - Outfit font bundled under the SIL Open Font License.
 
@@ -42,13 +42,14 @@ The app changes only Home on Fire's Accessibility service and preserves other en
 
 The Wi-Fi pill requests Location permission because Fire OS requires it to reveal the connected network name. Inputs for HDMI and AV display instructions to use the television remote; Fire TV apps cannot reliably switch inputs on the Samsung television itself. Live TV appears only when the Fire TV package is available.
 
-## Added a skill too , where you can directly use this skill to build the custom launcher for your tv
+## Custom launcher skill
 
+The reusable [Android TV custom launcher skill](.codex/skills/android-tv-custom-launcher/SKILL.md) documents the build, install, recovery, and screenshot-verification workflow.
 ## Project contents
 
 - `app/src/main/java/com/codex/firetvhome/MainActivity.java` — UI, app discovery and launch, focus memory, launcher switching, and screensaver.
 - `app/src/main/res/drawable-nodpi/` — AFT Home icon and banner.
-- `app/src/main/assets/` — Outfit font and its license.
+- `app/src/main/assets/` — Outfit font and its license. Screensaver image files remain local and are intentionally excluded from this review branch.
 - `build.sh` — builds the debug APK.
 - `tools/generate_logo.swift` — regenerates the launcher artwork.
 - `docs/screenshots/` — selected TV screenshots; the Wi-Fi name has been masked in the public copies.
